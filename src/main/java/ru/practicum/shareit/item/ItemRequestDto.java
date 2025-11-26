@@ -1,12 +1,9 @@
-package ru.practicum.shareit.request.dto;
+package ru.practicum.shareit.item;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
-/**
- * TODO Sprint add-item-requests.
- */
 @Data
 public class ItemRequestDto {
     @NotBlank(message = "Название не может быть пустым")
@@ -18,5 +15,5 @@ public class ItemRequestDto {
     @NotNull(message = "Необходимо заполнить поле доступность")
     private Boolean available;
 
-    private Integer id;
+    private Integer requestId;
 }
