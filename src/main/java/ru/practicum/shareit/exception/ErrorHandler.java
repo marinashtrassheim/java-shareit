@@ -56,4 +56,10 @@ public class ErrorHandler {
         log.warn("Ошибка доступа: {}", e.getMessage());
         return new ErrorResponse("Ошибка доступа", e.getMessage());
     }
+
+    @ExceptionHandler(ConflictException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleConflict(final ConflictException e) {
+        return new ErrorResponse("Конфликт данных", e.getMessage());
+    }
 }

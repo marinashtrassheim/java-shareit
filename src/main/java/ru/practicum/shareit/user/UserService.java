@@ -1,5 +1,6 @@
 package ru.practicum.shareit.user;
 
+import ru.practicum.shareit.exception.ConflictException;
 import ru.practicum.shareit.exception.ValidationException;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.NotFoundException;
@@ -15,7 +16,7 @@ public class UserService {
     public UserDto create(UserDto userDto) {
         User user = UserMapper.toUser(userDto);
         if (userStorage.userExist(user.getEmail())) {
-            throw new ValidationException("Email уже используется");
+            throw new ConflictException("Email уже используется");
         }
         User savedUser = userStorage.create(user);
         return UserMapper.toUserDto(savedUser);
@@ -26,7 +27,7 @@ public class UserService {
         if (userDto.getEmail() != null &&
                 !existingUser.getEmail().equals(userDto.getEmail()) &&
                 userStorage.userExist(userDto.getEmail())) {
-            throw new ValidationException("Email уже используется");
+            throw new ConflictException("Email уже используется");
         }
 
         User updatedUser = User.builder()
