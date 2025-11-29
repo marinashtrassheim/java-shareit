@@ -45,16 +45,14 @@ public class UserController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable int id) {
         log.info(">>> DELETE /users/{}", id);
-        userService.delete(id);
-        log.info("<<< DELETE /users/{} | Пользователь удален", id);
 
         try {
             userService.delete(id);
             log.info("<<< DELETE /users/{} | Пользователь удален", id);
-            return ResponseEntity.noContent().build();
+            return ResponseEntity.noContent().build(); // 204 No Content
         } catch (NotFoundException e) {
             log.info("<<< DELETE /users/{} | Пользователь не найден ", id);
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.notFound().build(); // 404 Not Found
         }
     }
 }
