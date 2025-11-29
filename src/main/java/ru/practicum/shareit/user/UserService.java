@@ -7,18 +7,20 @@ import ru.practicum.shareit.exception.NotFoundException;
 @Service
 public class UserService {
     private final UserStorage userStorage;
+    private final UserMapper userMapper;
 
-    public UserService(UserStorage userStorage) {
+    public UserService(UserStorage userStorage, UserMapper userMapper) {
         this.userStorage = userStorage;
+        this.userMapper = userMapper;
     }
 
     public UserDto create(UserDto userDto) {
-        User user = UserMapper.toUser(userDto);
+        User user = userMapper.toUser(userDto);
         if (userStorage.userExist(user.getEmail())) {
             throw new ConflictException("Email уже используется");
         }
         User savedUser = userStorage.create(user);
-        return UserMapper.toUserDto(savedUser);
+        return userMapper.toUserDto(savedUser);
     }
 
     public UserDto update(UserDto userDto) {
@@ -36,7 +38,7 @@ public class UserService {
                 .build();
 
         User savedUser = userStorage.update(updatedUser);
-        return UserMapper.toUserDto(savedUser);
+        return userMapper.toUserDto(savedUser);
     }
 
     public UserDto get(int id) {
@@ -44,7 +46,7 @@ public class UserService {
             throw new NotFoundException("Пользователь с id " + id + " не найден");
         }
         User user = userStorage.get(id);
-        return UserMapper.toUserDto(user);
+        return userMapper.toUserDto(user);
     }
 
     public void delete(int id) {

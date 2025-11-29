@@ -1,12 +1,10 @@
 package ru.practicum.shareit.item;
 
-import ru.practicum.shareit.user.User;
-
 import java.util.Collection;
 
 public interface ItemService {
 
-    ItemResponseDto create(ItemRequestDto itemRequestDto, User user);
+    ItemResponseDto create(ItemRequestDto itemRequestDto, int userId);
 
     ItemResponseDto update(int itemId, ItemRequestDto itemRequestDto, int userId);
 

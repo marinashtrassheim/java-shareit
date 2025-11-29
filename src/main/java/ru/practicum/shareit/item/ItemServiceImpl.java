@@ -5,6 +5,8 @@ import ru.practicum.shareit.exception.ForbiddenException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.UserDto;
+import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.UserService;
 
 import java.util.Collection;
@@ -15,14 +17,18 @@ import java.util.stream.Collectors;
 public class ItemServiceImpl implements ItemService {
     private final ItemStorage itemStorage;
     private final UserService userService;
+    private final ItemMapper itemMapper;
+    private final UserMapper userMapper;
 
-    public ItemServiceImpl(ItemStorage itemStorage, UserService userService) {
+    public ItemServiceImpl(ItemStorage itemStorage, UserService userService, ItemMapper itemMapper, UserMapper userMapper) {
         this.itemStorage = itemStorage;
         this.userService = userService;
+        this.itemMapper = itemMapper;
+        this.userMapper = userMapper;
     }
 
     @Override
-    public ItemResponseDto create(ItemRequestDto itemRequestDto, User user) {
+    public ItemResponseDto create(ItemRequestDto itemRequestDto, int userId) {
         if (itemRequestDto.getName() == null || itemRequestDto.getName().isBlank()) {
             throw new ValidationException("Название не может быть пустым");
         }
@@ -32,12 +38,15 @@ public class ItemServiceImpl implements ItemService {
         if (itemRequestDto.getAvailable() == null) {
             throw new ValidationException("Необходимо заполнить поле доступность");
         }
-        if (!userService.userExistsById(user.getId())) {
-            throw new NotFoundException("Пользователь с id " + user.getId() + " не найден");
+        if (!userService.userExistsById(userId)) {
+            throw new NotFoundException("Пользователь с id " + userId + " не найден");
         }
-        Item item = ItemMapper.toItemFromRequest(itemRequestDto, user);
+
+        UserDto userDto = userService.get(userId);
+        User user = userMapper.toUser(userDto);
+        Item item = itemMapper.toItem(itemRequestDto, user);
         Item itemSaved = itemStorage.create(item);
-        return ItemMapper.toResponseDto(itemSaved);
+        return itemMapper.toResponseDto(itemSaved);
     }
 
     @Override
@@ -59,7 +68,7 @@ public class ItemServiceImpl implements ItemService {
                 .request(existingItem.getRequest())
                 .build();
         Item itemSaved = itemStorage.update(updatedItem);
-        return ItemMapper.toResponseDto(itemSaved);
+        return itemMapper.toResponseDto(itemSaved);
 
     }
 
@@ -69,7 +78,7 @@ public class ItemServiceImpl implements ItemService {
             throw new NotFoundException("Вещь с id " + id + " не найдена");
         }
         Item item = itemStorage.get(id);
-        return ItemMapper.toResponseDto(item);
+        return itemMapper.toResponseDto(item);
     }
 
     @Override
@@ -79,7 +88,7 @@ public class ItemServiceImpl implements ItemService {
         }
 
         return itemStorage.getUserItems(userId).stream()
-                .map(ItemMapper::toResponseDto)
+                .map(itemMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
 
@@ -89,9 +98,8 @@ public class ItemServiceImpl implements ItemService {
             return Collections.emptyList();
         }
         return itemStorage.getItemsSearch(text).stream()
-                .map(ItemMapper::toResponseDto)
+                .map(itemMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
-
 
 }
