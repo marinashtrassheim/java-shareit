@@ -1,29 +1,22 @@
 package ru.practicum.shareit.booking;
 
-import jakarta.validation.constraints.NotNull;
+
+import lombok.*;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.user.User;
+import java.time.LocalDateTime;
 
-import java.text.DateFormat;
 
-/**
- * TODO Sprint add-bookings.
- */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Booking {
-    private int id;
-    @NotNull
-    private DateFormat start;
-    private DateFormat end;
+    private Long id;
+    private LocalDateTime start;
+    private LocalDateTime end;
     private Item item;
     private User booker;
-    private BookingStatus bookingStatus;
-
-    public enum BookingStatus {
-        WAITING,
-        APPROVED,
-        REJECTED,
-        CANCELED
-    }
+    private BookingStatus status;
 
 }
-

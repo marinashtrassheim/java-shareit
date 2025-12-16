@@ -9,11 +9,11 @@ import lombok.EqualsAndHashCode;
 import ru.practicum.shareit.validation.ValidationGroups;
 
 @Data
-@EqualsAndHashCode(of = "email")
+@EqualsAndHashCode(of = "id")
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserDto {
-    private int id;
+    private Long id;
     @NotBlank(message = "Имя не может быть пустым", groups = ValidationGroups.OnCreate.class)
     private String name;
     @NotBlank(message = "Email не может быть пустым", groups = ValidationGroups.OnCreate.class)

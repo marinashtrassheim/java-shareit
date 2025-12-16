@@ -1,14 +1,14 @@
 package ru.practicum.shareit.user;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 
 @Data
 @EqualsAndHashCode(of = "email")
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class User {
-    private int id;
+    private Long id;
     private String name;
     private String email;
 }

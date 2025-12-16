@@ -4,14 +4,15 @@ import java.util.Collection;
 
 public interface ItemService {
 
-    ItemResponseDto create(ItemRequestDto itemRequestDto, int userId);
+    ItemResponseDto create(ItemRequestDto itemRequestDto, Long userId);
 
-    ItemResponseDto update(int itemId, ItemRequestDto itemRequestDto, int userId);
+    ItemResponseDto update(Long itemId, ItemRequestDto itemRequestDto, Long userId);
 
-    ItemResponseDto getById(int id);
+    ItemResponseDto getById(Long id, Long userId);
 
-    Collection<ItemResponseDto> getUserItems(int userId);
+    Collection<ItemResponseDto> getUserItems(Long userId);
 
     Collection<ItemResponseDto> getItemsSearch(String text);
 
+    void validateItemCreation(ItemRequestDto itemRequestDto);
 }

@@ -26,16 +26,16 @@ public class UserController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<UserDto> update(@PathVariable int id, @RequestBody UserDto userDto) {
+    public ResponseEntity<UserDto> update(@PathVariable Long id, @RequestBody UserDto userDto, @RequestHeader("X-Sharer-User-Id") Long userId) {
         log.info(">>> PATCH /users/{} | Тело запроса: {}", id, userDto);
         userDto.setId(id);
-        UserDto updatedUser = userService.update(userDto);
+        UserDto updatedUser = userService.update(userDto, userId);
         log.info("<<< PATCH /users/{} | Пользователь обновлен: {}", id, updatedUser);
         return ResponseEntity.ok(updatedUser);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserDto> get(@PathVariable int id) {
+    public ResponseEntity<UserDto> get(@PathVariable Long id) {
         log.info(">>> GET /users/{}", id);
         UserDto user = userService.get(id);
         log.info("<<< GET /users/{} | Получен пользователь: {}", id, user);
@@ -43,7 +43,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable int id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         log.info(">>> DELETE /users/{}", id);
 
         try {

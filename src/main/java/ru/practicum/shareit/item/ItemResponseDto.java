@@ -2,12 +2,19 @@ package ru.practicum.shareit.item;
 
 import lombok.Builder;
 import lombok.Data;
+import ru.practicum.shareit.booking.BookingShortDto;
+import ru.practicum.shareit.comment.CommentResponseDto;
+
+import java.util.List;
 
 @Data
 @Builder
 public class ItemResponseDto {
-    private int id;
+    private Long id;
     private String name;
     private String description;
     private Boolean available;
+    private BookingShortDto lastBooking;
+    private BookingShortDto nextBooking;
+    private List<CommentResponseDto> comments;
 }
