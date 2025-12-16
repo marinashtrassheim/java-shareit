@@ -13,8 +13,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class Booking {
     private Long id;
-    private LocalDateTime start;
-    private LocalDateTime end;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
     private Item item;
     private User booker;
     private BookingStatus status;

@@ -136,7 +136,7 @@ public class BookingService {
     }
 
     public Collection<BookingResponseDto> getAllBookingsByBooker(Long userId) {
-        if(!userService.userExistsById(userId)) {
+        if (!userService.userExistsById(userId)) {
             throw new NotFoundException("Пользователь не найден");
         }
         List<BookingEntity> bookingEntities = bookingRepository.getBookingEntitiesByBookerId(userId);
@@ -148,7 +148,7 @@ public class BookingService {
     }
 
     public Collection<BookingResponseDto> getAllBookingsByItOwner(Long userId) {
-        if(!userService.userExistsById(userId)) {
+        if (!userService.userExistsById(userId)) {
             throw new NotFoundException("Пользователь не найден");
         }
 
