@@ -11,4 +11,5 @@ public class CommentResponseDto {
     private String text;
     private Long itemId;
     private Long authorId;
+    private String authorName;
 }

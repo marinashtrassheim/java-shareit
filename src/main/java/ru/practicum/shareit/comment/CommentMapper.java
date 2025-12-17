@@ -11,6 +11,7 @@ public interface CommentMapper {
     @Mapping(target = "author", ignore = true)
     Comment toComment(CommentRequestDto requestDto);
 
+    @Mapping(target = "authorName", source = "author.name")
     @Mapping(target = "itemId", source = "item.id")
     @Mapping(target = "authorId", source = "author.id")
     CommentResponseDto toResponseDto(Comment comment);

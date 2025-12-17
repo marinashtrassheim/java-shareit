@@ -8,6 +8,8 @@ import ru.practicum.shareit.exception.ForbiddenException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.user.*;
+
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -191,6 +193,9 @@ public class ItemServiceImpl implements ItemService {
                 itemId, userId, BookingStatus.APPROVED);
         if (booking == null) {
             throw new NotFoundException("Бронирование не найдено");
+        }
+        if (booking.getEndDate().isAfter(LocalDateTime.now())) {
+            throw new ValidationException("Бронирование должно быть завершено");
         }
     }
 
