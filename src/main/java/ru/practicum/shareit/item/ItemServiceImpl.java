@@ -173,6 +173,7 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
 
         Comment comment = commentMapper.toComment(commentRequestDto);
+        comment.setCreated(LocalDateTime.now());
         Item item = itemMapper.toModel(itemEntity);
         User author = userMapper.toModel(authorEntity);
         comment.setItem(item);

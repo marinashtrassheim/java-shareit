@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "comments")
 @Getter
@@ -22,5 +24,8 @@ public class CommentEntity {
 
     @Column(name = "author_id")
     private Long authorId;
+
+    @Column(name = "created")
+    private LocalDateTime created;
 
 }
