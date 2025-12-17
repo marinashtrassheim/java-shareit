@@ -26,10 +26,9 @@ public class UserController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<UserDto> update(@PathVariable Long id, @RequestBody UserDto userDto, @RequestHeader("X-Sharer-User-Id") Long userId) {
+    public ResponseEntity<UserDto> update(@PathVariable Long id, @RequestBody UserDto userDto) {
         log.info(">>> PATCH /users/{} | Тело запроса: {}", id, userDto);
-        userDto.setId(id);
-        UserDto updatedUser = userService.update(userDto, userId);
+        UserDto updatedUser = userService.update(userDto, id);
         log.info("<<< PATCH /users/{} | Пользователь обновлен: {}", id, updatedUser);
         return ResponseEntity.ok(updatedUser);
     }

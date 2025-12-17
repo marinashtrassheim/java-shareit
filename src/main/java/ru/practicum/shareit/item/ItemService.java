@@ -15,4 +15,7 @@ public interface ItemService {
     Collection<ItemResponseDto> getItemsSearch(String text);
 
     void validateItemCreation(ItemRequestDto itemRequestDto);
+
+    ItemResponseDto getItem(Long itemId);
+
 }

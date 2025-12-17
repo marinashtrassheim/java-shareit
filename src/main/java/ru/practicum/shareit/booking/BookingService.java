@@ -9,7 +9,6 @@ import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.*;
 import ru.practicum.shareit.user.*;
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,6 +26,7 @@ public class BookingService {
     private final UserMapper userMapper;
     private final ItemMapper itemMapper;
     private final UserRepository userRepository;
+    private final ItemService itemService;
 
     public BookingResponseDto create(BookingRequestDto bookingRequestDto, Long userId) {
         validateBookingDates(bookingRequestDto);
@@ -77,19 +77,11 @@ public class BookingService {
     }
 
     private void validateBookingDates(BookingRequestDto requestDto) {
-        LocalDateTime now = LocalDateTime.now();
         if (requestDto.getStart() == null) {
             throw new ValidationException("Дата начала должна быть указана");
         }
         if (requestDto.getEnd() == null) {
             throw new ValidationException("Дата окончания должна быть указана");
-        }
-        if (requestDto.getStart().isBefore(now)) {
-            throw new ValidationException("Дата начала не может быть в прошлом");
-        }
-
-        if (requestDto.getEnd().isBefore(now)) {
-            throw new ValidationException("Дата окончания не может быть в прошлом");
         }
 
         if (!requestDto.getEnd().isAfter(requestDto.getStart())) {
@@ -142,8 +134,20 @@ public class BookingService {
         List<BookingEntity> bookingEntities = bookingRepository.getBookingEntitiesByBookerId(userId);
 
         return bookingEntities.stream()
-                .map(bookingMapper::toBooking)
-                .map(bookingMapper::toResponseDto)
+                .map(bookingEntity -> {
+                    Booking booking = bookingMapper.toBooking(bookingEntity);
+                    UserDto bookerDto = userService.get(bookingEntity.getBookerId());
+                    booking.setBooker(userMapper.toUser(bookerDto));
+                    ItemResponseDto itemDto = itemService.getById(bookingEntity.getItemId(), userId);
+                    Item item = Item.builder()
+                            .id(itemDto.getId())
+                            .name(itemDto.getName())
+                            .description(itemDto.getDescription())
+                            .available(itemDto.getAvailable())
+                            .build();
+                    booking.setItem(item);
+                    return bookingMapper.toResponseDto(booking);
+        })
                 .collect(Collectors.toList());
     }
 

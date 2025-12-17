@@ -8,8 +8,6 @@ import ru.practicum.shareit.exception.ForbiddenException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.user.*;
-
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -194,9 +192,21 @@ public class ItemServiceImpl implements ItemService {
         if (booking == null) {
             throw new NotFoundException("Бронирование не найдено");
         }
-        if (booking.getEndDate().isAfter(LocalDateTime.now())) {
-            throw new ValidationException("Бронирование должно быть завершено");
-        }
+    }
 
+    @Override
+    public ItemResponseDto getItem(Long itemId) {
+        ItemEntity existingEntity = itemRepository.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("Вещь с id " + itemId + " не найдена"));
+
+        return ItemResponseDto.builder()
+                .id(existingEntity.getId())
+                .name(existingEntity.getName())
+                .description(existingEntity.getDescription())
+                .available(existingEntity.getAvailable())
+                .lastBooking(null)
+                .nextBooking(null)
+                .comments(Collections.emptyList())
+                .build();
     }
 }
