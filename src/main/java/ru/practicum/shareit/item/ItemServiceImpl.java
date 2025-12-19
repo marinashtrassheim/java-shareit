@@ -120,18 +120,27 @@ public class ItemServiceImpl implements ItemService {
     }
 
     public CommentResponseDto createComment(CommentRequestDto commentRequestDto, Long userId, Long itemId) {
-        BookingEntity booking = bookingRepository.getBookingEntityByItemIdAndBookerIdAndStatus(itemId, userId, BookingStatus.APPROVED)
+        BookingEntity booking = bookingRepository.getBookingEntityByItemIdAndBookerIdAndStatus(
+                        itemId, userId, BookingStatus.APPROVED)
                 .orElseThrow(() -> new NotFoundException("Бронирование не найдено"));
-        if (booking.getStatus() == BookingStatus.APPROVED) {
-            throw new ValidationException("Нельзя оставить комментарий к отклоненному или отмененному бронированию");
+
+        LocalDateTime now = LocalDateTime.now();
+
+        if (booking.getEndDate().isAfter(now)) {
+            throw new ValidationException("Нельзя оставить комментарий к активному бронированию");
         }
+
+        if (booking.getStatus() == BookingStatus.APPROVED) {
+            throw new ValidationException("Бронирование должно быть одобрено");
+        }
+
         ItemEntity itemEntity = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Вещь не найдена"));
         UserEntity authorEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
 
         CommentEntity comment = commentMapper.toEntity(commentRequestDto, itemEntity, authorEntity);
-        comment.setCreated(LocalDateTime.now());
+        comment.setCreated(now);
         CommentEntity saved = commentRepository.save(comment);
         return commentMapper.toResponseDto(saved);
     }
