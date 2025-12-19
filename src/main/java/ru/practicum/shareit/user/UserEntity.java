@@ -2,6 +2,10 @@ package ru.practicum.shareit.user;
 
 import jakarta.persistence.*;
 import lombok.*;
+import ru.practicum.shareit.booking.BookingEntity;
+import ru.practicum.shareit.comment.CommentEntity;
+
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -21,5 +25,11 @@ public class UserEntity {
 
     @Column(nullable = false, unique = true)
     private String email;
+
+    @OneToMany(mappedBy = "booker")
+    private List<BookingEntity> bookings;
+
+    @OneToMany(mappedBy = "author")
+    private List<CommentEntity> comments;
 
 }

@@ -2,7 +2,6 @@ package ru.practicum.shareit.request;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import ru.practicum.shareit.user.User;
 
 import java.time.LocalDate;
 
@@ -14,6 +13,5 @@ import java.time.LocalDate;
 public class ItemRequest {
     private int id;
     private String description;
-    private User requester;
     private LocalDate created;
 }

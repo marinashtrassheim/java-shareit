@@ -3,6 +3,8 @@ package ru.practicum.shareit.comment;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import ru.practicum.shareit.item.ItemEntity;
+import ru.practicum.shareit.user.UserEntity;
 
 import java.time.LocalDateTime;
 
@@ -19,11 +21,13 @@ public class CommentEntity {
     @Column(name = "text")
     private String text;
 
-    @Column(name = "item_id")
-    private Long itemId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "item_id", nullable = false)
+    private ItemEntity item;
 
-    @Column(name = "author_id")
-    private Long authorId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id", nullable = false)
+    private UserEntity author;
 
     @Column(name = "created")
     private LocalDateTime created;

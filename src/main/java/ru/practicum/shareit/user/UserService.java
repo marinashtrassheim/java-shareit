@@ -17,23 +17,14 @@ public class UserService {
 
     public UserDto create(UserDto userDto) {
         validateUserCreation(userDto);
-        User user = userMapper.toUser(userDto);
-        if (userRepository.existsByEmail(user.getEmail())) {
+        if (userRepository.existsByEmail(userDto.getEmail())) {
             throw new ConflictException("Email уже используется");
         }
 
-        UserEntity entity = UserEntity.builder()
-                .name(userDto.getName())
-                .email(userDto.getEmail())
-                .build();
+        UserEntity userEntity = userMapper.toEntity(userDto);
+        UserEntity savedEntity = userRepository.save(userEntity);
 
-        UserEntity savedEntity = userRepository.save(entity);
-
-        return UserDto.builder()
-                .id(savedEntity.getId())
-                .name(savedEntity.getName())
-                .email(savedEntity.getEmail())
-                .build();
+        return userMapper.toDto(savedEntity);
     }
 
     public UserDto update(UserDto userDto, Long userId) {

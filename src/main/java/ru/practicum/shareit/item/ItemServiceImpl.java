@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.*;
@@ -16,115 +17,71 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 @Slf4j
 public class ItemServiceImpl implements ItemService {
     private final UserService userService;
     private final ItemMapper itemMapper;
-    private final UserMapper userMapper;
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
     private final BookingRepository bookingRepository;
     private final CommentMapper commentMapper;
     private final CommentRepository commentRepository;
-    private final BookingMapper bookingMapper;
+    private final BookingService bookingService;
 
-    public ItemServiceImpl(UserService userService, ItemMapper itemMapper, UserMapper userMapper, UserRepository userRepository, ItemRepository itemRepository, BookingRepository bookingRepository,
-                           CommentMapper commentMapper, CommentRepository commentRepository, BookingMapper bookingMapper) {
-        this.userService = userService;
-        this.itemMapper = itemMapper;
-        this.userMapper = userMapper;
-        this.userRepository = userRepository;
-        this.itemRepository = itemRepository;
-        this.bookingRepository = bookingRepository;
-        this.commentMapper = commentMapper;
-        this.commentRepository = commentRepository;
-        this.bookingMapper = bookingMapper;
-    }
 
     @Override
     public ItemResponseDto create(ItemRequestDto itemRequestDto, Long userId) {
         validateItemCreation(itemRequestDto);
-        UserDto userDto = userService.get(userId);
-        User user = userMapper.toUser(userDto);
-        Item item = itemMapper.toItem(itemRequestDto, user);
-        item.setOwnerId(userId);
-        ItemEntity entity = itemMapper.toEntity(item);
-        ItemEntity savedEntity = itemRepository.save(entity);
+        UserEntity owner = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
 
-        Item savedItem = itemMapper.toModel(savedEntity);
-        savedItem.setOwner(user);
+        ItemEntity itemEntity = itemMapper.toEntity(itemRequestDto, owner);
 
-        return itemMapper.toResponseDto(savedItem);
+        ItemEntity savedEntity = itemRepository.save(itemEntity);
+
+        return itemMapper.toResponseDto(savedEntity);
     }
 
     @Override
     public ItemResponseDto update(Long itemId, ItemRequestDto itemRequestDto, Long userId) {
-        if (!userService.userExistsById(userId)) {
+        if (!userRepository.existsById(userId)) {
             throw new NotFoundException("Пользователь с id " + userId + " не найден");
         }
+
         ItemEntity existingEntity = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Вещь с id " + itemId + " не найдена"));
 
-        if (!existingEntity.getOwnerId().equals(userId)) {
+        if (!existingEntity.getOwner().getId().equals(userId)) {
             throw new ForbiddenException("Редактировать вещь может только её владелец");
         }
 
-        if (itemRequestDto.getDescription() != null && !itemRequestDto.getDescription().isBlank()) {
-            existingEntity.setDescription(itemRequestDto.getDescription());
-        }
-
-        if (itemRequestDto.getAvailable() != null) {
-            existingEntity.setAvailable(itemRequestDto.getAvailable());
-        }
         if (itemRequestDto.getName() != null) {
             existingEntity.setName(itemRequestDto.getName());
         }
+        if (itemRequestDto.getDescription() != null) {
+            existingEntity.setDescription(itemRequestDto.getDescription());
+        }
+        if (itemRequestDto.getAvailable() != null) {
+            existingEntity.setAvailable(itemRequestDto.getAvailable());
+        }
 
         ItemEntity savedEntity = itemRepository.save(existingEntity);
-
-        return ItemResponseDto.builder()
-                .id(savedEntity.getId())
-                .name(savedEntity.getName())
-                .description(savedEntity.getDescription())
-                .available(savedEntity.getAvailable())
-                .build();
-
+        return itemMapper.toResponseDto(savedEntity);
     }
 
     @Override
     public ItemResponseDto getById(Long id, Long userId) {
         ItemEntity existingEntity = itemRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Вещь с id " + id + " не найдена"));
-        List<CommentEntity> commentEntities = commentRepository.findAllByItemId(id);
-        List<CommentResponseDto> comments = commentEntities.stream()
-                .map(commentMapper::toModel)
-                .map(commentMapper::toResponseDto)
-                .collect(Collectors.toList());
 
-        BookingShortDto lastBooking = null;
-        BookingShortDto nextBooking = null;
-
-        if (existingEntity.getOwnerId().equals(userId)) {
-            List<BookingEntity> lastBookings = bookingRepository.findLastBookings(id);
-            if (!lastBookings.isEmpty()) {
-                lastBooking = bookingMapper.toBookingShortDto(lastBookings.getFirst());
-            }
-
-            List<BookingEntity> nextBookings = bookingRepository.findNextBookings(id);
-            if (!nextBookings.isEmpty()) {
-                nextBooking = bookingMapper.toBookingShortDto(nextBookings.getFirst());
-            }
+        ItemResponseDto dto = itemMapper.toResponseDto(existingEntity);
+        if (existingEntity.getOwner().getId().equals(userId)) {
+            dto.setLastBooking(bookingService.findLastBooking(id));
+            dto.setNextBooking(bookingService.findNextBooking(id));
         }
 
-        return ItemResponseDto.builder()
-                .id(existingEntity.getId())
-                .name(existingEntity.getName())
-                .description(existingEntity.getDescription())
-                .available(existingEntity.getAvailable())
-                .lastBooking(lastBooking)
-                .nextBooking(nextBooking)
-                .comments(comments)
-                .build();
+        return dto;
     }
 
     @Override
@@ -134,7 +91,6 @@ public class ItemServiceImpl implements ItemService {
         }
         List<ItemEntity> foundItems = itemRepository.findByOwnerId(userId);
         return foundItems.stream()
-                .map(itemMapper::toModel)
                 .map(itemMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
@@ -146,7 +102,6 @@ public class ItemServiceImpl implements ItemService {
         }
         List<ItemEntity> foundItems = itemRepository.searchAvailableItems(text);
         return foundItems.stream()
-                .map(itemMapper::toModel)
                 .map(itemMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
@@ -172,29 +127,16 @@ public class ItemServiceImpl implements ItemService {
         UserEntity authorEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
 
-        Comment comment = commentMapper.toComment(commentRequestDto);
+        CommentEntity comment = commentMapper.toEntity(commentRequestDto, itemEntity, authorEntity);
         comment.setCreated(LocalDateTime.now());
-        Item item = itemMapper.toModel(itemEntity);
-        User author = userMapper.toModel(authorEntity);
-        comment.setItem(item);
-        comment.setAuthor(author);
-        CommentEntity entity = commentMapper.toEntity(comment);
-        CommentEntity saved = commentRepository.save(entity);
-
-
-        Comment savedComment = commentMapper.toModel(saved);
-        savedComment.setItem(item);
-        savedComment.setAuthor(author);
-
-        return commentMapper.toResponseDto(savedComment);
+        CommentEntity saved = commentRepository.save(comment);
+        return commentMapper.toResponseDto(saved);
     }
 
     public void validateCommentCreation(Long userId, Long itemId) {
-        BookingEntity booking = bookingRepository.getBookingEntityByItemIdAndBookerIdAndStatus(
-                itemId, userId, BookingStatus.APPROVED);
-        if (booking == null) {
-            throw new NotFoundException("Бронирование не найдено");
-        }
+        BookingEntity booking = bookingRepository.getBookingEntityByItemIdAndBookerIdAndStatus(itemId, userId, BookingStatus.APPROVED)
+                .orElseThrow(() -> new NotFoundException("Бронирование не найдено"));
+
         if (booking.getEndDate().isAfter(LocalDateTime.now())) {
             throw new ValidationException("Бронирование должно быть завершено");
         }

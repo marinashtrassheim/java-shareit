@@ -2,6 +2,11 @@ package ru.practicum.shareit.item;
 
 import jakarta.persistence.*;
 import lombok.*;
+import ru.practicum.shareit.booking.BookingEntity;
+import ru.practicum.shareit.comment.CommentEntity;
+import ru.practicum.shareit.user.UserEntity;
+
+import java.util.List;
 
 @Entity
 @Table(name = "items")
@@ -24,9 +29,17 @@ public class ItemEntity {
     @Column(name = "is_available")
     private Boolean available;
 
-    @Column(name = "owner_id")
-    private Long ownerId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id", nullable = false)
+    private UserEntity owner;
 
     @Column(name = "request_id")
     private Long requestId;
+
+    @OneToMany(mappedBy = "item")
+    private List<BookingEntity> bookings;
+
+    @OneToMany(mappedBy = "item")
+    private List<CommentEntity> comments;
+
 }

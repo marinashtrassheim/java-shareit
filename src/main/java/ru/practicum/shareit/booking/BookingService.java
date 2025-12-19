@@ -9,8 +9,11 @@ import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.*;
 import ru.practicum.shareit.user.*;
+
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,56 +26,50 @@ public class BookingService {
     private final BookingMapper bookingMapper;
     private final UserService userService;
     private final ItemRepository itemRepository;
-    private final UserMapper userMapper;
-    private final ItemMapper itemMapper;
     private final UserRepository userRepository;
-    private final ItemService itemService;
+
 
     public BookingResponseDto create(BookingRequestDto bookingRequestDto, Long userId) {
         validateBookingDates(bookingRequestDto);
 
-        User booker = userMapper.toUser(userService.get(userId));
+        UserEntity bookerEntity = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+
         ItemEntity itemEntity = itemRepository.findById(bookingRequestDto.getItemId())
                 .orElseThrow(() -> new NotFoundException("Вещь не найдена"));
-        validateBusinessRules(itemEntity, userId);
 
-        Booking booking = bookingMapper.toBooking(bookingRequestDto);
-        booking.setBooker(booker);
-        booking.setItem(itemMapper.toModel(itemEntity));
+        if (itemEntity.getOwner().getId() != null && itemEntity.getOwner().getId().equals(bookerEntity.getId())) {
+            throw new ValidationException("Владелец не может бронировать свою вещь");
+        }
 
-        BookingEntity entity = bookingMapper.toEntity(booking);
-        BookingEntity savedEntity = bookingRepository.save(entity);
+        if (!itemEntity.getAvailable()) {
+            throw new ValidationException("Вещь недоступна для бронирования");
+        }
 
-        booking.setId(savedEntity.getId());
+        BookingEntity bookingEntity = BookingEntity.builder()
+                .startDate(bookingRequestDto.getStart())
+                .endDate(bookingRequestDto.getEnd())
+                .item(itemEntity)
+                .booker(bookerEntity)
+                .status(BookingStatus.WAITING)
+                .build();
 
-        return bookingMapper.toResponseDto(booking);
+        BookingEntity savedEntity = bookingRepository.save(bookingEntity);
+        return bookingMapper.toResponseDto(savedEntity);
     }
 
     public BookingResponseDto approve(Long userId, Long bookingId) {
         BookingEntity booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Бронирование не найдено"));
-
-        ItemEntity itemEntity = itemRepository.findById(booking.getItemId())
-                .orElseThrow(() -> new NotFoundException("Вещь не найдена"));
-
-        if (!itemEntity.getOwnerId().equals(userId)) {
+        if (!booking.getItem().getOwner().getId().equals(userId)) {
             throw new ValidationException(
                     "Подтверждать бронирование может только владелец вещи");
         }
 
         booking.setStatus(BookingStatus.APPROVED);
-        bookingRepository.save(booking);
+        BookingEntity updatedBooking = bookingRepository.save(booking);
 
-        UserEntity bookerEntity = userRepository.findById(booking.getBookerId())
-                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
-
-        User booker = userMapper.toModel(bookerEntity);
-        Item item = itemMapper.toModel(itemEntity);
-        Booking bookingModel = bookingMapper.toBooking(booking);
-
-        bookingModel.setItem(item);
-        bookingModel.setBooker(booker);
-        return bookingMapper.toResponseDto(bookingModel);
+        return bookingMapper.toResponseDto(updatedBooking);
 
     }
 
@@ -89,42 +86,18 @@ public class BookingService {
         }
     }
 
-    private void validateBusinessRules(ItemEntity itemEntity, Long bookerId) {
-        if (itemEntity.getAvailable() == null || !itemEntity.getAvailable()) {
-            throw new ValidationException("Вещь с ID=" + itemEntity.getId() + " недоступна");
-        }
-
-        if (itemEntity.getOwnerId() != null && itemEntity.getOwnerId().equals(bookerId)) {
-            throw new ValidationException("Владелец не может бронировать свою вещь");
-        }
-    }
-
     public BookingResponseDto get(Long bookingId, Long userId) {
         BookingEntity booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Бронирование не найдено"));
 
-        boolean isBooker = booking.getBookerId().equals(userId);
-        boolean isOwner = itemRepository.existsByIdAndOwnerId(
-                booking.getItemId(), userId);
+        boolean isBooker = booking.getBooker().getId().equals(userId);
+        boolean isOwner = booking.getItem().getOwner().getId().equals(userId);
 
         if (!isBooker && !isOwner) {
             throw new ForbiddenException("Доступ запрещен");
         }
 
-        ItemEntity itemEntity = itemRepository.findById(booking.getItemId())
-                .orElseThrow(() -> new NotFoundException("Вещь не найдена"));
-        UserEntity bookerEntity = userRepository.findById(booking.getBookerId())
-                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
-
-
-        Item item = itemMapper.toModel(itemEntity);
-        User booker = userMapper.toModel(bookerEntity);
-        Booking bookingModel = bookingMapper.toBooking(booking);
-
-        bookingModel.setItem(item);
-        bookingModel.setBooker(booker);
-
-        return bookingMapper.toResponseDto(bookingModel);
+        return bookingMapper.toResponseDto(booking);
     }
 
     public Collection<BookingResponseDto> getAllBookingsByBooker(Long userId) {
@@ -134,20 +107,7 @@ public class BookingService {
         List<BookingEntity> bookingEntities = bookingRepository.getBookingEntitiesByBookerId(userId);
 
         return bookingEntities.stream()
-                .map(bookingEntity -> {
-                    Booking booking = bookingMapper.toBooking(bookingEntity);
-                    UserDto bookerDto = userService.get(bookingEntity.getBookerId());
-                    booking.setBooker(userMapper.toUser(bookerDto));
-                    ItemResponseDto itemDto = itemService.getById(bookingEntity.getItemId(), userId);
-                    Item item = Item.builder()
-                            .id(itemDto.getId())
-                            .name(itemDto.getName())
-                            .description(itemDto.getDescription())
-                            .available(itemDto.getAvailable())
-                            .build();
-                    booking.setItem(item);
-                    return bookingMapper.toResponseDto(booking);
-        })
+                .map(bookingMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
 
@@ -158,9 +118,37 @@ public class BookingService {
 
         List<BookingEntity> bookingEntities = bookingRepository.findByOwnerId(userId);
         return bookingEntities.stream()
-                .map(bookingMapper::toBooking)
                 .map(bookingMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
 
+    public BookingShortDto findLastBooking(Long itemId) {
+        Optional<BookingEntity> bookingOpt = bookingRepository
+                .findFirstByItemIdAndEndDateBeforeOrderByEndDateDesc(
+                        itemId,
+                        LocalDateTime.now()
+                );
+
+        return bookingOpt.map(bookingMapper::toShortDto).orElse(null);
+    }
+
+    public BookingShortDto findNextBooking(Long itemId) {
+        Optional<BookingEntity> bookingOpt = bookingRepository
+                .findFirstByItemIdAndStartDateAfterOrderByStartDateAsc(
+                        itemId,
+                        LocalDateTime.now()
+                );
+        return bookingOpt.map(bookingMapper::toShortDto).orElse(null);
+    }
+
+    public BookingShortDto findCurrentBooking(Long itemId) {
+        Optional<BookingEntity> bookingOpt = bookingRepository
+                .findFirstByItemIdAndStartDateBeforeAndEndDateAfter(
+                        itemId,
+                        LocalDateTime.now(),
+                        LocalDateTime.now()
+                );
+
+        return bookingOpt.map(bookingMapper::toShortDto).orElse(null);
+    }
 }
