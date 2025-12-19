@@ -120,8 +120,8 @@ public class ItemServiceImpl implements ItemService {
     }
 
     public CommentResponseDto createComment(CommentRequestDto commentRequestDto, Long userId, Long itemId) {
-        validateCommentCreation(userId, itemId);
-
+        BookingEntity booking = bookingRepository.getBookingEntityByItemIdAndBookerIdAndStatus(itemId, userId, BookingStatus.APPROVED)
+                .orElseThrow(() -> new NotFoundException("Бронирование не найдено"));
         ItemEntity itemEntity = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Вещь не найдена"));
         UserEntity authorEntity = userRepository.findById(userId)
@@ -131,15 +131,6 @@ public class ItemServiceImpl implements ItemService {
         comment.setCreated(LocalDateTime.now());
         CommentEntity saved = commentRepository.save(comment);
         return commentMapper.toResponseDto(saved);
-    }
-
-    public void validateCommentCreation(Long userId, Long itemId) {
-        BookingEntity booking = bookingRepository.getBookingEntityByItemIdAndBookerIdAndStatus(itemId, userId, BookingStatus.APPROVED)
-                .orElseThrow(() -> new NotFoundException("Бронирование не найдено"));
-
-        if (booking.getEndDate().isAfter(LocalDateTime.now())) {
-            throw new ValidationException("Бронирование должно быть завершено");
-        }
     }
 
     @Override
