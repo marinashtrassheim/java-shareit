@@ -104,7 +104,7 @@ public class BookingService {
         if (!userService.userExistsById(userId)) {
             throw new NotFoundException("Пользователь не найден");
         }
-        List<BookingEntity> bookingEntities = bookingRepository.getBookingEntitiesByBookerId(userId);
+        List<BookingEntity> bookingEntities = bookingRepository.findByBooker_Id(userId);
 
         return bookingEntities.stream()
                 .map(bookingMapper::toResponseDto)

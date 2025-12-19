@@ -120,18 +120,12 @@ public class ItemServiceImpl implements ItemService {
     }
 
     public CommentResponseDto createComment(CommentRequestDto commentRequestDto, Long userId, Long itemId) {
-        BookingEntity booking = bookingRepository.getBookingEntityByItemIdAndBookerIdAndStatus(
+        BookingEntity booking = bookingRepository.findByItem_IdAndBooker_IdAndStatus(
                         itemId, userId, BookingStatus.APPROVED)
                 .orElseThrow(() -> new NotFoundException("Бронирование не найдено"));
 
-        LocalDateTime now = LocalDateTime.now();
-
-        if (booking.getEndDate().isAfter(now)) {
+        if (booking.getEndDate().isAfter(LocalDateTime.now())) {
             throw new ValidationException("Нельзя оставить комментарий к активному бронированию");
-        }
-
-        if (booking.getStatus() == BookingStatus.APPROVED) {
-            throw new ValidationException("Бронирование должно быть одобрено");
         }
 
         ItemEntity itemEntity = itemRepository.findById(itemId)
@@ -140,7 +134,7 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
 
         CommentEntity comment = commentMapper.toEntity(commentRequestDto, itemEntity, authorEntity);
-        comment.setCreated(now);
+        comment.setCreated(LocalDateTime.now());
         CommentEntity saved = commentRepository.save(comment);
         return commentMapper.toResponseDto(saved);
     }

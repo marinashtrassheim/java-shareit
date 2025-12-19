@@ -14,10 +14,15 @@ public interface BookingRepository extends JpaRepository<BookingEntity, Long>  {
 
     List<BookingEntity> getBookingEntitiesByBookerId(Long bookerId);
 
+    List<BookingEntity> findByBooker_Id(Long bookerId);
+
     @Query("SELECT b FROM BookingEntity b WHERE b.item.owner.id = :ownerId")
     List<BookingEntity> findByOwnerId(@Param("ownerId") Long ownerId);
 
     Optional<BookingEntity> getBookingEntityByItemIdAndBookerIdAndStatus(Long itemId, Long bookerId, BookingStatus status);
+
+    Optional<BookingEntity> findByItem_IdAndBooker_IdAndStatus(
+            Long itemId, Long bookerId, BookingStatus status);
 
     Optional<BookingEntity> findFirstByItemIdAndEndDateBeforeOrderByEndDateDesc(
             Long itemId,
