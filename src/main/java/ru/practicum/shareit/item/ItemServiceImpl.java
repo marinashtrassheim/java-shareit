@@ -122,6 +122,9 @@ public class ItemServiceImpl implements ItemService {
     public CommentResponseDto createComment(CommentRequestDto commentRequestDto, Long userId, Long itemId) {
         BookingEntity booking = bookingRepository.getBookingEntityByItemIdAndBookerIdAndStatus(itemId, userId, BookingStatus.APPROVED)
                 .orElseThrow(() -> new NotFoundException("Бронирование не найдено"));
+        if (booking.getStatus() == BookingStatus.APPROVED) {
+            throw new ValidationException("Нельзя оставить комментарий к отклоненному или отмененному бронированию");
+        }
         ItemEntity itemEntity = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Вещь не найдена"));
         UserEntity authorEntity = userRepository.findById(userId)
