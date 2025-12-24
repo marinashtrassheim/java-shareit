@@ -5,6 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.comment.CommentRequestDto;
+import ru.practicum.shareit.comment.CommentResponseDto;
+
 import java.util.Collection;
 
 
@@ -17,7 +20,7 @@ public class ItemController {
 
     @GetMapping
     public ResponseEntity<Collection<ItemResponseDto>> getUserItems(
-            @RequestHeader("X-Sharer-User-Id") int userId) {
+            @RequestHeader("X-Sharer-User-Id") Long userId) {
         log.info(">>> GET /items | X-Sharer-User-Id: {}", userId);
         Collection<ItemResponseDto> items = itemServiceImpl.getUserItems(userId);
         log.info("<<< GET /items | Получено {} items для пользователя {}", items.size(), userId);
@@ -26,11 +29,20 @@ public class ItemController {
 
 
     @GetMapping("/{id}")
-    public ResponseEntity<ItemResponseDto> getItemById(@PathVariable int id) {
+    public ResponseEntity<ItemResponseDto> getItemById(@RequestHeader("X-Sharer-User-Id") Long userId, @PathVariable Long id) {
         log.info(">>> GET /items/{id} | item с id {}", id);
-        ItemResponseDto requestedItem = itemServiceImpl.getById(id);
+        ItemResponseDto requestedItem = itemServiceImpl.getById(id, userId);
         log.info(">>> GET /items/{id} | отправлено item {}", requestedItem);
         return ResponseEntity.ok(requestedItem);
+    }
+
+    @PostMapping("/{id}/comment")
+    public ResponseEntity<CommentResponseDto> createComment(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                            @PathVariable Long id, @RequestBody CommentRequestDto commentRequestDto) {
+        log.info(">>> POST /items/id/comment | X-Sharer-User-Id: {} | Тело запроса: {}", userId, commentRequestDto);
+        CommentResponseDto response = itemServiceImpl.createComment(commentRequestDto, userId, id);
+        log.info("<<< POST /items | Создан новый comment: {}", response);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/search")
@@ -44,9 +56,9 @@ public class ItemController {
 
     @PatchMapping("/{itemId}")
     public ResponseEntity<ItemResponseDto> update(
-            @PathVariable int itemId,
+            @PathVariable Long itemId,
             @RequestBody ItemRequestDto itemRequestDto,
-            @RequestHeader("X-Sharer-User-Id") int userId) {
+            @RequestHeader("X-Sharer-User-Id") Long userId) {
         log.info(">>> PATCH /items/{itemId} | X-Sharer-User-Id: {} | Тело запроса: {}, ID запроса: {}",
                 userId, itemRequestDto, itemId);
         ItemResponseDto itemUpdated = itemServiceImpl.update(itemId, itemRequestDto, userId);
@@ -57,7 +69,7 @@ public class ItemController {
     @PostMapping
     public ResponseEntity<ItemResponseDto> create(
             @RequestBody ItemRequestDto itemRequestDto,
-            @RequestHeader("X-Sharer-User-Id") int userId) {
+            @RequestHeader("X-Sharer-User-Id") Long userId) {
         log.info(">>> POST /items | X-Sharer-User-Id: {} | Тело запроса: {}", userId, itemRequestDto);
         ItemResponseDto createdItem = itemServiceImpl.create(itemRequestDto, userId);
         log.info("<<< POST /items | Создан новый item: {}", createdItem);

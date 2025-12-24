@@ -4,59 +4,79 @@ import ru.practicum.shareit.exception.ConflictException;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.NotFoundException;
 
+
 @Service
 public class UserService {
-    private final UserStorage userStorage;
     private final UserMapper userMapper;
+    private final UserRepository userRepository;
 
-    public UserService(UserStorage userStorage, UserMapper userMapper) {
-        this.userStorage = userStorage;
+    public UserService(UserMapper userMapper, UserRepository userRepository) {
+        this.userRepository = userRepository;
         this.userMapper = userMapper;
     }
 
     public UserDto create(UserDto userDto) {
-        User user = userMapper.toUser(userDto);
-        if (userStorage.userExist(user.getEmail())) {
+        validateUserCreation(userDto);
+        if (userRepository.existsByEmail(userDto.getEmail())) {
             throw new ConflictException("Email уже используется");
         }
-        User savedUser = userStorage.create(user);
-        return userMapper.toUserDto(savedUser);
+
+        UserEntity userEntity = userMapper.toEntity(userDto);
+        UserEntity savedEntity = userRepository.save(userEntity);
+
+        return userMapper.toDto(savedEntity);
     }
 
-    public UserDto update(UserDto userDto) {
-        User existingUser = userStorage.get(userDto.getId());
+    public UserDto update(UserDto userDto, Long userId) {
+        UserEntity entity = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+
         if (userDto.getEmail() != null &&
-                !existingUser.getEmail().equals(userDto.getEmail()) &&
-                userStorage.userExist(userDto.getEmail())) {
+                !userDto.getEmail().equals(entity.getEmail()) &&
+                userRepository.existsByEmail(userDto.getEmail())) {
             throw new ConflictException("Email уже используется");
         }
 
-        User updatedUser = User.builder()
-                .id(existingUser.getId())
-                .name(userDto.getName() != null ? userDto.getName() : existingUser.getName())
-                .email(userDto.getEmail() != null ? userDto.getEmail() : existingUser.getEmail())
+        if (userDto.getName() != null) entity.setName(userDto.getName());
+        if (userDto.getEmail() != null) entity.setEmail(userDto.getEmail());
+
+        UserEntity saved = userRepository.save(entity);
+
+        return UserDto.builder()
+                .id(saved.getId())
+                .name(saved.getName())
+                .email(saved.getEmail())
                 .build();
-
-        User savedUser = userStorage.update(updatedUser);
-        return userMapper.toUserDto(savedUser);
     }
 
-    public UserDto get(int id) {
-        if (!userStorage.userExistById(id)) {
-            throw new NotFoundException("Пользователь с id " + id + " не найден");
+    public UserDto get(Long id) {
+        UserEntity entity = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id " + id + " не найден"));
+
+        return UserDto.builder()
+                .id(entity.getId())
+                .name(entity.getName())
+                .email(entity.getEmail())
+                .build();
+    }
+
+    public void delete(Long id) {
+        userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        userRepository.deleteById(id);
+    }
+
+    public boolean userExistsById(Long userId) {
+        return userRepository.existsById(userId);
+    }
+
+    public void validateUserCreation(UserDto userDto) {
+        if (userDto.getEmail() == null) {
+            throw new IllegalArgumentException("Email не может быть пустым");
         }
-        User user = userStorage.get(id);
-        return userMapper.toUserDto(user);
-    }
-
-    public void delete(int id) {
-        if (!userStorage.userExistById(id)) {
-            throw new NotFoundException("Пользователь с id " + id + " не найден");
+        if (userDto.getName() == null) {
+            throw new IllegalArgumentException("Имя не может быть пустым");
         }
-        userStorage.delete(id);
     }
 
-    public boolean userExistsById(int id) {
-        return userStorage.userExistById(id);
-    }
 }
