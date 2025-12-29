@@ -7,7 +7,8 @@ import org.mapstruct.Mapping;
 import ru.practicum.shareit.user.UserEntity;
 
 @Mapper(componentModel = "spring",
-        uses = {BookingMapper.class, CommentMapper.class})
+        uses = {BookingMapper.class, CommentMapper.class},
+        injectionStrategy = org.mapstruct.InjectionStrategy.CONSTRUCTOR)
 public interface ItemMapper {
 
     @Mapping(target = "id", ignore = true)

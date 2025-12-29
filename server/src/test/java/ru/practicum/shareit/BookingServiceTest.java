@@ -264,4 +264,219 @@ class BookingServiceTest {
 
         assertEquals(expectedDto, result);
     }
+
+    @Test
+    void approve_whenApprovedTrue_shouldSetStatusApproved() {
+        BookingEntity booking = new BookingEntity();
+        ItemEntity item = new ItemEntity();
+        UserEntity owner = new UserEntity();
+        owner.setId(1L);
+        item.setOwner(owner);
+        booking.setItem(item);
+        booking.setStatus(BookingStatus.WAITING);
+
+        BookingDto expectedDto = new BookingDto();
+
+        when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
+        when(bookingRepository.save(booking)).thenReturn(booking);
+        when(bookingMapper.toDto(booking)).thenReturn(expectedDto);
+
+        BookingDto result = bookingService.approve(1L, 1L, true);
+
+        assertEquals(BookingStatus.APPROVED, booking.getStatus());
+        assertEquals(expectedDto, result);
+    }
+
+    @Test
+    void approve_whenApprovedFalse_shouldSetStatusRejected() {
+        BookingEntity booking = new BookingEntity();
+        ItemEntity item = new ItemEntity();
+        UserEntity owner = new UserEntity();
+        owner.setId(1L);
+        item.setOwner(owner);
+        booking.setItem(item);
+        booking.setStatus(BookingStatus.WAITING);
+
+        BookingDto expectedDto = new BookingDto();
+
+        when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
+        when(bookingRepository.save(booking)).thenReturn(booking);
+        when(bookingMapper.toDto(booking)).thenReturn(expectedDto);
+
+        BookingDto result = bookingService.approve(1L, 1L, false);
+
+        assertEquals(BookingStatus.REJECTED, booking.getStatus());
+        assertEquals(expectedDto, result);
+    }
+
+    @Test
+    void getAllBookingsByBooker_whenStateCurrent() {
+        when(userService.userExistsById(1L)).thenReturn(true);
+        when(bookingRepository.findCurrentBookings(eq(1L), any(LocalDateTime.class), any(Pageable.class)))
+                .thenReturn(List.of());
+
+        bookingService.getAllBookingsByBooker(1L, "CURRENT", 0, 10);
+
+        verify(bookingRepository).findCurrentBookings(eq(1L), any(LocalDateTime.class), any(Pageable.class));
+    }
+
+    @Test
+    void getAllBookingsByBooker_whenStatePast() {
+        when(userService.userExistsById(1L)).thenReturn(true);
+        when(bookingRepository.findPastBookings(eq(1L), any(LocalDateTime.class), any(Pageable.class)))
+                .thenReturn(List.of());
+
+        bookingService.getAllBookingsByBooker(1L, "PAST", 0, 10);
+
+        verify(bookingRepository).findPastBookings(eq(1L), any(LocalDateTime.class), any(Pageable.class));
+    }
+
+    @Test
+    void getAllBookingsByBooker_whenStateFuture() {
+        when(userService.userExistsById(1L)).thenReturn(true);
+        when(bookingRepository.findFutureBookings(eq(1L), any(LocalDateTime.class), any(Pageable.class)))
+                .thenReturn(List.of());
+
+        bookingService.getAllBookingsByBooker(1L, "FUTURE", 0, 10);
+
+        verify(bookingRepository).findFutureBookings(eq(1L), any(LocalDateTime.class), any(Pageable.class));
+    }
+
+    @Test
+    void getAllBookingsByBooker_whenStateWaiting() {
+        when(userService.userExistsById(1L)).thenReturn(true);
+        when(bookingRepository.findByBooker_IdAndStatus(eq(1L), eq(BookingStatus.WAITING), any(Pageable.class)))
+                .thenReturn(List.of());
+
+        bookingService.getAllBookingsByBooker(1L, "WAITING", 0, 10);
+
+        verify(bookingRepository).findByBooker_IdAndStatus(eq(1L), eq(BookingStatus.WAITING), any(Pageable.class));
+    }
+
+    @Test
+    void getAllBookingsByBooker_whenStateRejected() {
+        when(userService.userExistsById(1L)).thenReturn(true);
+        when(bookingRepository.findByBooker_IdAndStatus(eq(1L), eq(BookingStatus.REJECTED), any(Pageable.class)))
+                .thenReturn(List.of());
+
+        bookingService.getAllBookingsByBooker(1L, "REJECTED", 0, 10);
+
+        verify(bookingRepository).findByBooker_IdAndStatus(eq(1L), eq(BookingStatus.REJECTED), any(Pageable.class));
+    }
+
+    @Test
+    void getAllBookingsByItOwner_whenStateCurrent() {
+        when(userService.userExistsById(1L)).thenReturn(true);
+        when(bookingRepository.findCurrentOwnerBookings(eq(1L), any(LocalDateTime.class), any(Pageable.class)))
+                .thenReturn(List.of());
+
+        bookingService.getAllBookingsByItOwner(1L, "CURRENT", 0, 10);
+
+        verify(bookingRepository).findCurrentOwnerBookings(eq(1L), any(LocalDateTime.class), any(Pageable.class));
+    }
+
+    @Test
+    void getAllBookingsByItOwner_whenStatePast() {
+        when(userService.userExistsById(1L)).thenReturn(true);
+        when(bookingRepository.findPastOwnerBookings(eq(1L), any(LocalDateTime.class), any(Pageable.class)))
+                .thenReturn(List.of());
+
+        bookingService.getAllBookingsByItOwner(1L, "PAST", 0, 10);
+
+        verify(bookingRepository).findPastOwnerBookings(eq(1L), any(LocalDateTime.class), any(Pageable.class));
+    }
+
+    @Test
+    void getAllBookingsByItOwner_whenStateFuture() {
+        when(userService.userExistsById(1L)).thenReturn(true);
+        when(bookingRepository.findFutureOwnerBookings(eq(1L), any(LocalDateTime.class), any(Pageable.class)))
+                .thenReturn(List.of());
+
+        bookingService.getAllBookingsByItOwner(1L, "FUTURE", 0, 10);
+
+        verify(bookingRepository).findFutureOwnerBookings(eq(1L), any(LocalDateTime.class), any(Pageable.class));
+    }
+
+    @Test
+    void getAllBookingsByItOwner_whenStateWaiting() {
+        when(userService.userExistsById(1L)).thenReturn(true);
+        when(bookingRepository.findByItem_Owner_IdAndStatus(eq(1L), eq(BookingStatus.WAITING), any(Pageable.class)))
+                .thenReturn(List.of());
+
+        bookingService.getAllBookingsByItOwner(1L, "WAITING", 0, 10);
+
+        verify(bookingRepository).findByItem_Owner_IdAndStatus(eq(1L), eq(BookingStatus.WAITING), any(Pageable.class));
+    }
+
+    @Test
+    void getAllBookingsByItOwner_whenStateRejected() {
+        when(userService.userExistsById(1L)).thenReturn(true);
+        when(bookingRepository.findByItem_Owner_IdAndStatus(eq(1L), eq(BookingStatus.REJECTED), any(Pageable.class)))
+                .thenReturn(List.of());
+
+        bookingService.getAllBookingsByItOwner(1L, "REJECTED", 0, 10);
+
+        verify(bookingRepository).findByItem_Owner_IdAndStatus(eq(1L), eq(BookingStatus.REJECTED), any(Pageable.class));
+    }
+
+    @Test
+    void getAllBookingsByBooker_whenUnknownState_shouldThrowIllegalArgumentException() {
+        when(userService.userExistsById(1L)).thenReturn(true);
+
+        assertThrows(IllegalArgumentException.class, () ->
+                bookingService.getAllBookingsByBooker(1L, "UNKNOWN", 0, 10));
+    }
+
+    @Test
+    void getAllBookingsByItOwner_whenUnknownState_shouldThrowIllegalArgumentException() {
+        when(userService.userExistsById(1L)).thenReturn(true);
+
+        assertThrows(IllegalArgumentException.class, () ->
+                bookingService.getAllBookingsByItOwner(1L, "UNKNOWN", 0, 10));
+    }
+
+    @Test
+    void findLastBooking_whenNoBooking_shouldReturnNull() {
+        when(bookingRepository.findFirstByItemIdAndEndDateBeforeOrderByEndDateDesc(
+                eq(1L), any(LocalDateTime.class)))
+                .thenReturn(Optional.empty());
+
+        BookingShortDto result = bookingService.findLastBooking(1L);
+
+        assertNull(result);
+    }
+
+    @Test
+    void findNextBooking_whenNoBooking_shouldReturnNull() {
+        when(bookingRepository.findFirstByItemIdAndStartDateAfterOrderByStartDateAsc(
+                eq(1L), any(LocalDateTime.class)))
+                .thenReturn(Optional.empty());
+
+        BookingShortDto result = bookingService.findNextBooking(1L);
+
+        assertNull(result);
+    }
+
+    @Test
+    void get_whenUserIsOwner_shouldReturnBooking() {
+        BookingEntity booking = new BookingEntity();
+        UserEntity booker = new UserEntity();
+        booker.setId(2L);
+        booking.setBooker(booker);
+
+        ItemEntity item = new ItemEntity();
+        UserEntity owner = new UserEntity();
+        owner.setId(1L);
+        item.setOwner(owner);
+        booking.setItem(item);
+
+        BookingDto expectedDto = new BookingDto();
+
+        when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
+        when(bookingMapper.toDto(booking)).thenReturn(expectedDto);
+
+        BookingDto result = bookingService.get(1L, 1L);
+
+        assertEquals(expectedDto, result);
+    }
 }

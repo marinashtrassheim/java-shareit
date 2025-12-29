@@ -5,7 +5,8 @@ import org.mapstruct.Mapping;
 import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.user.UserMapper;
 
-@Mapper(componentModel = "spring", uses = {UserMapper.class, ItemMapper.class})
+@Mapper(componentModel = "spring", uses = {UserMapper.class, ItemMapper.class},
+        injectionStrategy = org.mapstruct.InjectionStrategy.CONSTRUCTOR)
 public interface BookingMapper {
 
     @Mapping(target = "start", source = "startDate")

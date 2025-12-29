@@ -3,7 +3,7 @@ package ru.practicum.shareit.user;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", injectionStrategy = org.mapstruct.InjectionStrategy.CONSTRUCTOR)
 public interface UserMapper {
 
     @Mapping(target = "id", ignore = true)
