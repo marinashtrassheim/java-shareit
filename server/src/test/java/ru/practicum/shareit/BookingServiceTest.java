@@ -155,20 +155,6 @@ class BookingServiceTest {
     }
 
     @Test
-    void approve_whenUserNotOwner_shouldThrowNotFoundException() {
-        BookingEntity booking = new BookingEntity();
-        ItemEntity item = new ItemEntity();
-        UserEntity owner = new UserEntity();
-        owner.setId(2L);
-        item.setOwner(owner);
-        booking.setItem(item);
-
-        when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
-
-        assertThrows(NotFoundException.class, () -> bookingService.approve(1L, 1L, true));
-    }
-
-    @Test
     void approve_whenStatusNotWaiting_shouldThrowValidationException() {
         BookingEntity booking = new BookingEntity();
         ItemEntity item = new ItemEntity();
@@ -478,5 +464,19 @@ class BookingServiceTest {
         BookingDto result = bookingService.get(1L, 1L);
 
         assertEquals(expectedDto, result);
+    }
+
+    @Test
+    void approve_whenUserNotOwner_shouldThrowForbiddenException() {
+        BookingEntity booking = new BookingEntity();
+        ItemEntity item = new ItemEntity();
+        UserEntity owner = new UserEntity();
+        owner.setId(2L);
+        item.setOwner(owner);
+        booking.setItem(item);
+
+        when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
+
+        assertThrows(ForbiddenException.class, () -> bookingService.approve(1L, 1L, true));
     }
 }

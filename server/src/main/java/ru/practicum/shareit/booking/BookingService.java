@@ -67,7 +67,7 @@ public class BookingService {
                 .orElseThrow(() -> new NotFoundException("Бронирование не найдено"));
 
         if (!booking.getItem().getOwner().getId().equals(userId)) {
-            throw new NotFoundException("Бронирование владельца не найдено");
+            throw new ForbiddenException("Подтверждать бронирование может только владелец вещи");
         }
         if (booking.getStatus() != BookingStatus.WAITING) {
             throw new ValidationException("Бронирование уже рассмотрено");
