@@ -65,9 +65,9 @@ public class BookingService {
     public BookingDto approve(Long userId, Long bookingId, Boolean approved) {
         BookingEntity booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Бронирование не найдено"));
+
         if (!booking.getItem().getOwner().getId().equals(userId)) {
-            throw new ValidationException(
-                    "Подтверждать бронирование может только владелец вещи");
+            throw new NotFoundException("Бронирование владельца не найдено");
         }
         if (booking.getStatus() != BookingStatus.WAITING) {
             throw new ValidationException("Бронирование уже рассмотрено");

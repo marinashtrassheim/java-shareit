@@ -80,4 +80,5 @@ public interface BookingRepository extends JpaRepository<BookingEntity, Long>  {
 
     List<BookingEntity> findByItem_Owner_IdAndStatus(Long id, BookingStatus status, Pageable pageable);
 
+    Optional<BookingEntity> findById(Long bookingId);
 }

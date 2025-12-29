@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
@@ -71,7 +72,7 @@ public class ItemController {
 
     @PostMapping
     public ResponseEntity<Object> create(
-            @RequestBody ItemRequestDto itemRequestDto,
+            @RequestBody @Valid ItemRequestDto itemRequestDto,
             @RequestHeader("X-Sharer-User-Id") Long userId) {
         log.info(">>> POST /items | X-Sharer-User-Id: {} | Тело запроса: {}", userId, itemRequestDto);
         ResponseEntity<Object> response = itemClient.create(userId, itemRequestDto);
