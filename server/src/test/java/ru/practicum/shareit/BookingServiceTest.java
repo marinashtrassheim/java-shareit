@@ -155,7 +155,7 @@ class BookingServiceTest {
     }
 
     @Test
-    void approve_whenUserNotOwner_shouldThrowValidationException() {
+    void approve_whenUserNotOwner_shouldThrowNotFoundException() {
         BookingEntity booking = new BookingEntity();
         ItemEntity item = new ItemEntity();
         UserEntity owner = new UserEntity();
@@ -165,7 +165,7 @@ class BookingServiceTest {
 
         when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
 
-        assertThrows(ValidationException.class, () -> bookingService.approve(1L, 1L, true));
+        assertThrows(NotFoundException.class, () -> bookingService.approve(1L, 1L, true));
     }
 
     @Test
