@@ -1,4 +1,4 @@
-package ru.practicum.shareit;
+package ru.practicum.shareit.item;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -8,10 +8,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.comment.CommentDto;
-import ru.practicum.shareit.item.ItemInputDto;
-import ru.practicum.shareit.item.ItemOutputDto;
-import ru.practicum.shareit.item.ItemServerController;
-import ru.practicum.shareit.item.ItemServiceImpl;
 
 import java.util.Collections;
 import java.util.List;

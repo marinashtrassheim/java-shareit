@@ -1,4 +1,4 @@
-package ru.practicum.shareit;
+package ru.practicum.shareit.item;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,7 +14,6 @@ import ru.practicum.shareit.comment.*;
 import ru.practicum.shareit.exception.ForbiddenException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
-import ru.practicum.shareit.item.*;
 import ru.practicum.shareit.request.ItemRequestEntity;
 import ru.practicum.shareit.request.ItemRequestRepository;
 import ru.practicum.shareit.user.UserEntity;

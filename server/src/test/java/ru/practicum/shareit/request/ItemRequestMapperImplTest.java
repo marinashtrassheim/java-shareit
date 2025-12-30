@@ -1,13 +1,9 @@
-package ru.practicum.shareit;
+package ru.practicum.shareit.request;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import ru.practicum.shareit.item.ItemMapper;
-import ru.practicum.shareit.request.ItemRequestDto;
-import ru.practicum.shareit.request.ItemRequestEntity;
-import ru.practicum.shareit.request.ItemRequestMapper;
-import ru.practicum.shareit.request.ItemRequestMapperImpl;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package ru.practicum.shareit;
+package ru.practicum.shareit.user;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -6,8 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.ActiveProfiles;
-import ru.practicum.shareit.user.UserEntity;
-import ru.practicum.shareit.user.UserRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

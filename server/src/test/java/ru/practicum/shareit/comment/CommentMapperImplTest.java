@@ -1,12 +1,9 @@
-package ru.practicum.shareit;
+package ru.practicum.shareit.comment;
 
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.practicum.shareit.comment.CommentDto;
-import ru.practicum.shareit.comment.CommentEntity;
-import ru.practicum.shareit.comment.CommentMapperImpl;
 import ru.practicum.shareit.item.ItemEntity;
 import ru.practicum.shareit.user.UserEntity;
 

@@ -1,9 +1,8 @@
-package ru.practicum.shareit;
+package ru.practicum.shareit.validation;
 
 
 import org.junit.jupiter.api.Test;
 import ru.practicum.shareit.booking.BookingDto;
-import ru.practicum.shareit.validation.EndAfterStartServerValidator;
 
 import java.time.LocalDateTime;
 

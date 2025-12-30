@@ -1,4 +1,4 @@
-package ru.practicum.shareit;
+package ru.practicum.shareit.request;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,7 +9,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.request.*;
 import ru.practicum.shareit.user.UserEntity;
 import ru.practicum.shareit.user.UserRepository;
 

@@ -1,4 +1,4 @@
-package ru.practicum.shareit;
+package ru.practicum.shareit.item;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -8,8 +8,6 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
-import ru.practicum.shareit.item.ItemEntity;
-import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.request.ItemRequestEntity;
 import ru.practicum.shareit.user.UserEntity;
 

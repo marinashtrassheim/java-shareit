@@ -1,4 +1,4 @@
-package ru.practicum.shareit;
+package ru.practicum.shareit.item;
 
 
 import org.junit.jupiter.api.BeforeEach;
@@ -10,7 +10,6 @@ import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.comment.CommentMapper;
 import ru.practicum.shareit.comment.CommentEntity;
 import ru.practicum.shareit.comment.CommentDto;
-import ru.practicum.shareit.item.*;
 import ru.practicum.shareit.request.ItemRequestEntity;
 import ru.practicum.shareit.user.UserEntity;
 
